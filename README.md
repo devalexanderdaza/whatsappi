@@ -8,11 +8,11 @@ After cloning this repository or using it as a template, you have to follow thes
 
 1. Grant permission of your repository to allow `semantic-release` to change dynamically the version of the package.
 
-![Alt Text](https://raw.githubusercontent.com/maxgfr/typescript-boilerplate-package/main/.github/assets/permissions.png)
+![Alt Text](https://raw.githubusercontent.com/devalexanderdaza/whatsappi/main/.github/assets/permissions.png)
 
 2. Set `NPM_TOKEN` in your Github actions secret.
 
-![Alt Text](https://raw.githubusercontent.com/maxgfr/typescript-boilerplate-package/main/.github/assets/token.png)
+![Alt Text](https://raw.githubusercontent.com/devalexanderdaza/whatsappi/main/.github/assets/token.png)
 
 ## Test this boilerplate
 
