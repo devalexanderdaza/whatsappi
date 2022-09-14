@@ -6,7 +6,6 @@ import {
   WAVersion,
   WABrowserDescription,
 } from '@adiwajshing/baileys';
-import { WhatsappiInstances } from '../../whatsappi.instances';
 
 interface WhatsappiBaileysConfig extends Partial<CommonSocketConfig> {
   /** provide an auth state object to maintain the auth state */
@@ -52,8 +51,4 @@ export interface WhatsappiOptions extends WhatsappiBaileysConfig {
   sessionAccessToken?: string;
   sessionWebhook?: string | null;
   autoCloseTimeout?: number;
-}
-
-export interface WhatsappiClientsStore {
-  [key: string]: WhatsappiInstances;
 }
