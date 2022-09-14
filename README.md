@@ -1,24 +1,70 @@
-# typescript-boilerplate-package
+# WhatsAppi Baileys Library Wrapper
 
-`typescript-boilerplate-package` is a package that helps you to create a typescript project with a nice structure. It uses [semantic-release](https://github.com/semantic-release/semantic-release) to publish your package on npm and generate a changelog.
+`WhatsAppi` a open-source Baileys WhatsApp API library wrapper. No puppeteer or selenium, faster than ever!
+`WhatsAppi` wraps Baileys' user-bearable library into user-enjoyable library.
+Simply put a client up and assign event handlers, that's it!
 
-## Usage
+# Usage
 
-After cloning this repository or using it as a template, you have to follow these steps:
+## Installation
 
-1. Grant permission of your repository to allow `semantic-release` to change dynamically the version of the package.
+### From NPM
 
-![Alt Text](https://raw.githubusercontent.com/devalexanderdaza/whatsappi/main/.github/assets/permissions.png)
-
-2. Set `NPM_TOKEN` in your Github actions secret.
-
-![Alt Text](https://raw.githubusercontent.com/devalexanderdaza/whatsappi/main/.github/assets/token.png)
-
-## Test this boilerplate
-
-To test it, you can install it with `npm install typescript-boilerplate-package`. Then :
-
-```ts
-import {sayHello} from "typescript-boilerplate-package";
-sayHello();
+```sh
+npm install --save @devalexanderdaza/whatsappi
 ```
+
+### From YARN
+
+```sh
+yarn add @devalexanderdaza/whatsappi
+```
+
+## Power Up New Client
+
+```js
+const whatsappi = require('@devalexanderdaza/whatsappi');
+
+// Or call using ES
+import * as whatsappi from '@devalexanderdaza/whatsappi';
+
+let config = {};
+whatsappi.create('clientName', config).then((client) => {
+  // When QR changed or created
+  // display them on console
+  client.onQRUpdated((qr) => {
+    console.log(qr);
+  });
+
+  // This is when the QR has been scanned
+  client.onQRScanned(() => {
+    console.log('[*] QR Code scanned, logging in...');
+  });
+
+  // This is fired when new incoming/outgoing
+  // messages sent. Currently, the library also
+  // includes system messages
+  client.onMessage((msg) => {
+    console.log('[i] New message: ', msg.content);
+    //msg.reply("Hello!");
+  });
+});
+
+// Keep the program going
+// omit this if you have other implementation
+whatsappi.forever();
+```
+
+## Found an Issue?
+
+Or simply want to add a new feature you have been dreaming of?<br>
+Submit a new Issue with the correct formation and relax.
+
+## For Developers
+
+Want to contribute to the project? Easy,
+
+1. Find an issue to start with
+2. Fork the project
+3. Make PR
+4. Get merged.
