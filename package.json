@@ -1,27 +1,64 @@
 {
-  "name": "typescript-boilerplate-package",
-  "version": "1.0.2",
-  "author": "maxgfr",
+  "name": "whatsappi",
+  "description": "Baileys Whatsapp library wrapper for easy integration on any NodeJS projects. This library using the latest version of @adiwajshing/baileys library for install and run",
+  "version": "0.0.0",
+  "author": {
+    "name": "Alexander Daza",
+    "email": "dev.alexander.daza@gmail.com",
+    "url": "https://www.alexanderdaza.com"
+  },
+  "contributors": [
+    {
+      "name": "Alexander Daza",
+      "email": "dev.alexander.daza@gmail.com",
+      "url": "https://www.alexanderdaza.com"
+    }
+  ],
   "license": "MIT",
-  "description": "A typescript boilerplate using swc to release a package on npm",
   "main": "./build/index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/maxgfr/typescript-boilerplate-package.git"
+    "url": "https://github.com/devalexanderdaza/whatsappi.git"
   },
   "bugs": {
-    "url": "https://github.com/maxgfr/typescript-boilerplate-package/issues"
+    "url": "https://github.com/devalexanderdaza/whatsappi/issues"
   },
-  "homepage": "https://github.com/maxgfr/typescript-boilerplate-package#readme",
+  "homepage": "https://github.com/devalexanderdaza/whatsappi#readme",
   "files": [
     "build"
   ],
   "keywords": [
-    "boilerplate",
+    "whatsapp",
+    "api",
+    "baileys",
     "typescript",
     "swc",
+    "nodejs",
+    "library",
+    "wrapper",
+    "easy",
+    "lib",
+    "integration",
+    "whatsapp",
+    "whatsappjs",
+    "whatsapp.js",
+    "whatsapp-api",
+    "whatsapp-api-wrapper",
+    "whatsapp-api-lib",
+    "whatsapp-api-library",
+    "whatsapp-api-wrapper",
+    "whatsapp-api-wrapper-lib",
+    "whatsapp-api-wrapper-library",
+    "whatsapp-api-wrapper-library-lib",
+    "whatsapp-api-wrapper-library-library",
+    "multidevice",
+    "multidevice-whatsapp",
+    "whatsapp-bot",
+    "whatsapp-bot-lib",
+    "whatsapp-bot-library",
+    "whatsapp-bot-wrapper",
+    "whatsapp-client",
     "package",
-    "release",
     "github"
   ],
   "scripts": {
@@ -63,5 +100,8 @@
     "rimraf": "3.0.2",
     "semantic-release": "19.0.5",
     "typescript": "4.8.3"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
