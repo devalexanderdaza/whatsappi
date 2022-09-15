@@ -1,54 +1,90 @@
-import {
-  proto,
-  CommonSocketConfig,
-  AuthenticationState,
-  MessageRetryMap,
-  WAVersion,
-  WABrowserDescription,
-} from '@adiwajshing/baileys';
+import { Contact, MessageUpsertType, proto } from '@adiwajshing/baileys';
 
-interface WhatsappiBaileysConfig extends Partial<CommonSocketConfig> {
-  /** provide an auth state object to maintain the auth state */
-  auth?: AuthenticationState;
-  /** By default true, should history messages be downloaded and processed */
-  downloadHistory?: boolean;
-  /** marks the client as online whenever the socket successfully connects */
-  markOnlineOnConnect?: boolean;
-  /**
-   * map to store the retry counts for failed messages;
-   * used to determine whether to retry a message or not */
-  msgRetryCounterMap?: MessageRetryMap;
-  /** width for link preview images */
-  linkPreviewImageThumbnailWidth?: number;
-  /** Should Baileys ask the phone for full history, will be received async */
-  syncFullHistory?: boolean;
-  /** Fails the connection if the socket times out in this interval */
-  connectTimeoutMs?: number;
-  /** ping-pong interval for WS connection */
-  keepAliveIntervalMs?: number;
-  /** version to connect with */
-  version?: WAVersion;
-  /** override browser config */
-  browser?: WABrowserDescription;
-  /** should the QR be printed in the terminal */
-  printQRInTerminal?: boolean;
-  /** time to wait for the generation of the next QR in ms */
-  qrTimeout?: number;
-  /** should events be emitted for actions done by this socket connection */
-  emitOwnEvents?: boolean;
-  /** time to wait between sending new retry requests */
-  retryRequestDelayMs?: number;
-  /**
-   * fetch a message from your store
-   * implement this so that messages failed to send (solves the "this message can take a while" issue) can be retried
-   * */
-  getMessage?: (key: proto.IMessageKey) => Promise<proto.IMessage | undefined>;
+export interface MessagesType {
+  messages: proto.IWebMessageInfo[];
+  type: MessageUpsertType;
+  fileNameDownloaded?: string;
 }
 
-export interface WhatsappiOptions extends WhatsappiBaileysConfig {
+export interface ITypeDeviceWithMessage {
+  typeDevice: string;
+  message: proto.WebMessageInfo;
+}
+
+export interface WhatsappiProps {
   sessionName: string;
-  sessionKey?: string;
-  sessionAccessToken?: string;
-  sessionWebhook?: string | null;
-  autoCloseTimeout?: number;
+  agentName?: string;
+  qrCodeInTerminal: boolean;
+  IgnoreBroadCastMessages: boolean;
+  IgnoreGroupsMessages: boolean;
+  IgnoreServer_ACK: boolean;
+  onMessage: (message: MessagesType) => void;
+  onStatusChange: (connectionStatus: 'Connected' | 'WaitinLogin') => void;
+  onDisconnected: () => void;
+}
+
+export interface IExistenceOnWhatsApp {
+  exists: boolean;
+  formatedJid: string;
+}
+
+export interface IListMessageDefinitions {
+  text: string;
+  footer?: string;
+  title: string;
+  buttonText: string;
+  sections: Array<{
+    title: string;
+    rows: Array<{
+      title: string;
+      rowId: string;
+      description?: string;
+    }>;
+  }>;
+}
+
+export interface IWhatsappi {
+  verifyExistenceNumber: (number: string) => Promise<IExistenceOnWhatsApp>;
+  sendGifOrVideoMessage: (
+    mediaPath: string,
+    number: string,
+    content?: string,
+    isGif?: boolean,
+  ) => Promise<proto.WebMessageInfo>;
+  sendImage: (
+    imagePath: string,
+    number: string,
+    content?: string,
+  ) => Promise<proto.WebMessageInfo>;
+  sendAudioMedia: (
+    audioPath: string,
+    number: string,
+    isPtt?: boolean,
+  ) => Promise<proto.WebMessageInfo>;
+  logOut: () => Promise<boolean>;
+  sendListMessage: (
+    number: string,
+    listMessage: IListMessageDefinitions,
+  ) => Promise<proto.WebMessageInfo>;
+  getDeviceInformation: () => Contact;
+  blockContact: (number: string) => Promise<boolean>;
+  unBlockContact: (number: string) => Promise<boolean>;
+  getImageContact: (
+    number: string,
+    isGroup: boolean,
+  ) => Promise<{ uri: string }>;
+  deleteMessageForEveryone: (
+    number: string,
+    messageId: string,
+    isGroup?: boolean,
+  ) => Promise<boolean>;
+  sendSimpleMessage: (
+    content: string,
+    number: string,
+  ) => Promise<proto.WebMessageInfo>;
+  replyMessage: (
+    number: string,
+    content: string,
+    quotedId: string,
+  ) => Promise<proto.WebMessageInfo>;
 }
