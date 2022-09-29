@@ -1,4 +1,5 @@
 import { Whatsappi, WhatsappiOptions } from './';
+
 const whatsappiOptions: WhatsappiOptions = {
   sessionName: 'Whatsappi',
   printQRinTerminal: true,

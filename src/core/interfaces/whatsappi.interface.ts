@@ -5,10 +5,13 @@ export interface WhatsappiOptions {
   id?: string;
   sessionId?: string;
   sessionName: string;
+  sessionToken?: string;
+  webhookUrl?: string;
+  restartable?: boolean;
   printQRinTerminal?: boolean;
+  markOnlineOnConnect?: boolean;
   ignoreBroadcastMessages: boolean;
   ignoreGroupMessages: boolean;
   ignoreServerAck: boolean;
-  markOnlineOnConnect?: boolean;
   syncFullHistory?: boolean;
 }
