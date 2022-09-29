@@ -1,22 +1,16 @@
 import makeWASocket, {
   AuthenticationState,
-  BaileysEvent,
-  BaileysEventMap,
   BinaryNode,
-  Browsers,
   DisconnectReason,
   fetchLatestBaileysVersion,
   MessageRetryMap,
-  proto,
-  WACallEvent,
+  UserFacingSocketConfig,
   WASocket,
 } from '@adiwajshing/baileys';
 import log from '@adiwajshing/baileys/lib/Utils/logger';
 import { WAMessage } from '@adiwajshing/baileys';
 
 import { Boom } from '@hapi/boom';
-
-import QR from 'qrcode-terminal';
 
 import AuthHandle from 'baileys-bottle/lib/bottle/AuthHandle';
 import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
@@ -33,38 +27,20 @@ export class Whatsappi {
    * Whatsappi options
    */
   options: WhatsappiOptions;
-  auth: AuthHandle = {} as AuthHandle;
-  store: StoreHandle = {} as StoreHandle;
-  state: AuthenticationState = undefined as any;
-  saveState: () => void = undefined as any;
+  auth!: AuthHandle;
+  store!: StoreHandle;
+  state!: AuthenticationState;
+  saveState!: () => void;
   msgRetryCounterMap: MessageRetryMap = {};
   logger: Logger = log.child({}) as Logger;
-  socketOptions: UserFacingSocketConfig;
-  socket: WASocket = undefined as any;
-  ev: InstanceType<typeof EventEmitter>;
-  events: Array<EventEntry> = [];
-  query: (node: BinaryNode, timeout?: number) => Promise<BinaryNode> =
-    undefined as any;
-
-  on: (event: string, cb: any) => void = undefined as any;
-  onQRUpdated: (cb: (qr: string, data: string | object) => void) => void =
-    undefined as any;
-  onQRScanned: (cb: () => void) => void = undefined as any;
-  onLoggedIn: (cb: () => void) => void = undefined as any;
-  onLoggedOut: (cb: () => void) => void = undefined as any;
-  onMessage: (cb: (msg: WAMessage) => void) => void = undefined as any;
+  socketOptions!: UserFacingSocketConfig;
+  socket!: WASocket;
+  whatsappiDatabase!: DatabaseModule;
 
   constructor(options: WhatsappiOptions) {
     this.options = options;
     this.logger.level = 'silent';
-
-    this.ev = new EventEmitter();
-    const database = new DatabaseModule(this.options);
-    const { auth, store } = await database.init();
-    this.auth = auth;
-    this.store = store;
-    return { auth, store };
-  };
+  }
 
   /**
    * Get authentication state
@@ -97,9 +73,13 @@ export class Whatsappi {
    * Start Whatsappi
    */
   public start = async (): Promise<WhatsappiInstance> => {
-    await this.init();
     const logger = log.child({});
-    logger.level = 'silent';
+    logger.level = 'debug';
+
+    this.whatsappiDatabase = new DatabaseModule(this.options);
+    const { auth, store } = await this.whatsappiDatabase.init();
+    this.auth = auth;
+    this.store = store;
 
     const { state, saveState } = await this.getState();
     this.saveState = saveState;
@@ -107,7 +87,7 @@ export class Whatsappi {
     const { version, isLatest } = await fetchLatestBaileysVersion();
     console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
-    const socket: WASocket = makeWASocket({
+    this.socketOptions = {
       logger,
       auth: state,
       printQRInTerminal: this.options.printQRinTerminal,
@@ -118,14 +98,25 @@ export class Whatsappi {
       connectTimeoutMs: 60000,
       downloadHistory: true,
       linkPreviewImageThumbnailWidth: 300,
-    });
+    };
+    const socket: WASocket = makeWASocket(this.socketOptions);
     this.socket = socket;
     if (this.store) {
       this.store.bind(this.socket.ev);
     }
-    this.socket.ev.on('creds.update', async () => {
-      if (this.saveState) {
-        this.saveState();
+    this.socket.ev.on('creds.update', () => this.saveState());
+    this.socket.ev.on('connection.update', (update) => {
+      const { connection, lastDisconnect } = update;
+      if (connection === 'close') {
+        // reconnect if not logged out
+        if (
+          (lastDisconnect?.error as Boom)?.output?.statusCode !==
+          DisconnectReason.loggedOut
+        ) {
+          this.start();
+        } else {
+          console.log('Connection closed. You are logged out.');
+        }
       }
     });
 
@@ -137,6 +128,9 @@ export class Whatsappi {
           throw new Error('Store is not initialized');
         } else {
           resolve({
+            instanceOptions: this.options,
+            whatsappiDatabase: this.whatsappiDatabase.getWhatsappiDataStore(),
+            socketOptions: this.socketOptions,
             socket: this.socket,
             store: this.store,
             getStore: this.store,
@@ -148,10 +142,13 @@ export class Whatsappi {
                 }
               });
             },
-            onMessage: (cb: (message: WAMessage) => void) => {
-              this.socket?.ev.on('messages.upsert', (message) =>
-                cb(message[0]),
-              );
+            onQRScanned: (cb: () => void) => {
+              this.socket?.ev.on('connection.update', (update) => {
+                const { connection } = update;
+                if (connection === 'open') {
+                  cb();
+                }
+              });
             },
             onLoggedIn: (cb: () => void) => {
               this.socket?.ev.on('connection.update', (update) => {
@@ -161,43 +158,12 @@ export class Whatsappi {
                 }
               });
             },
-            onDisconnected: (
-              cb: (reason: { error: Error | undefined; date: Date }) => void,
-            ) => {
-              this.socket?.ev.on('connection.update', (update) => {
-                const { connection, lastDisconnect } = update;
-                if (connection === 'close') {
-                  if (lastDisconnect) {
-                    cb(lastDisconnect);
-                  }
+            onEvent: (event: string, cb: any) => {
+              this.socket?.ev.process(async (events) => {
+                if (events[event]) {
+                  await cb(events[event]);
                 }
               });
-            },
-            onReconnectRequested: (
-              cb: (reason: { error: Error | undefined; date: Date }) => void,
-            ) => {
-              this.socket?.ev.on('connection.update', (update) => {
-                const { connection, lastDisconnect } = update;
-                if (connection === 'close') {
-                  if (
-                    lastDisconnect &&
-                    (lastDisconnect?.error as Boom)?.output?.statusCode !==
-                      DisconnectReason.loggedOut
-                  ) {
-                    cb(lastDisconnect);
-                  }
-                }
-              });
-            },
-            onCallReceived: (cb: (call: WACallEvent[]) => void) => {
-              this.socket?.ev.on('call', (call: WACallEvent[]) => {
-                cb(call);
-              });
-            },
-            logout: async () => {
-              if (this.socket) {
-                await this.socket.logout();
-              }
             },
           });
         }
