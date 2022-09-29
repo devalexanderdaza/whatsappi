@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+
 import { WhatsappiOptions } from '../../../interfaces';
-import { InstanceConnectionStatus } from '../../../interfaces/instance.interface';
 
 @Entity('instances')
 export class Instance {
@@ -19,7 +19,7 @@ export class Instance {
   @Column({ nullable: true })
   webhookUrl?: string;
 
-  @Column({ nullable: false, default: false })
+  @Column({ nullable: false })
   restartable!: boolean;
 
   @Column({ nullable: true })
@@ -28,11 +28,6 @@ export class Instance {
   @Column({ nullable: false, type: 'simple-json' })
   options!: WhatsappiOptions;
 
-  @Column({
-    nullable: false,
-    type: 'enum',
-    enum: InstanceConnectionStatus,
-    default: InstanceConnectionStatus.DISCONNECTED,
-  })
-  connectionStatus!: InstanceConnectionStatus;
+  @Column()
+  connectionStatus!: string;
 }

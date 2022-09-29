@@ -1,51 +1,35 @@
-import { DataSource, DataSourceOptions } from 'typeorm';
-import { WhatsappiOptions } from '../../interfaces/whatsappi.interface';
-import {
-  Auth,
-  Chat,
-  Contact,
-  GroupMetadata,
-  Message,
-  MessageDic,
-  Presence,
-  PresenceDic,
-} from './entities';
-import { AuthHandler, StoreHandler } from './handlers';
-import { Instance } from './entities/instance.entity';
-import { generateUUID, generateUUIDFromString } from '../../utils/global.util';
+import { DataSource } from 'typeorm';
+
+import BaileysBottle from 'baileys-bottle';
+import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
+import AuthHandle from 'baileys-bottle/lib/bottle/AuthHandle';
+
+import { cwd } from 'process';
+
 import { InstanceConnectionStatus } from '../../interfaces/instance.interface';
+import { WhatsappiOptions } from '../../interfaces/whatsappi.interface';
+import { generateUUID, generateUUIDFromString } from '../../utils/global.util';
 
-class DatabaseModule {
-  static instance: DatabaseModule = new DatabaseModule();
-  private constructor() {
-    console.log('DatabaseModule created');
-  }
+import { Instance } from './entities';
 
-  init = async (
+export class DatabaseModule {
+  private whatsappiOptions: WhatsappiOptions;
+  private databaseName: string;
+  private options:
+    | {
+        sync?: boolean | undefined;
+        debug?: boolean | undefined;
+      }
+    | undefined;
+  private whatsappiDataStore: DataSource | null = null;
+  constructor(
     whatsappiOptions: WhatsappiOptions,
-    db: DataSourceOptions,
     options?: {
-      debug?: boolean;
       sync?: boolean;
+      debug?: boolean;
     },
-  ): Promise<{ auth: AuthHandler; store: StoreHandler }> => {
-    const ds = await new DataSource({
-      ...db,
-      entities: [
-        Auth,
-        Chat,
-        Contact,
-        GroupMetadata,
-        MessageDic,
-        Message,
-        PresenceDic,
-        Presence,
-        Instance,
-      ],
-      synchronize: options?.sync,
-      migrations: [],
-      logging: options?.debug,
-    }).initialize();
+  ) {
+    console.log('Database module initialized');
     // Validate wharsappiOptions
     whatsappiOptions.sessionId = whatsappiOptions.sessionId || generateUUID();
     whatsappiOptions.sessionName = whatsappiOptions.sessionName || 'default';
@@ -69,37 +53,83 @@ class DatabaseModule {
       whatsappiOptions.ignoreGroupMessages || false;
     whatsappiOptions.ignoreServerAck =
       whatsappiOptions.ignoreServerAck || false;
+    this.whatsappiOptions = whatsappiOptions;
+    this.options = options;
+    // Create new BaileysBottle
+    const databaseName = `${whatsappiOptions.sessionId}.db`;
+    this.databaseName = databaseName;
+  }
+
+  public init = async (): Promise<{
+    auth: AuthHandle;
+    store: StoreHandle;
+  }> => {
+    const ds = await new DataSource({
+      type: 'sqlite',
+      database: cwd() + `/db/whatsappi.db`,
+      entities: [Instance],
+      migrations: [],
+      synchronize: this.options?.sync || true,
+      logging: this.options?.debug || true,
+    }).initialize();
+    this.whatsappiDataStore = ds;
+
     try {
-      // Check if instance exists in database
-      const instance = await ds.getRepository(Instance).findOne({
+      const instanceRepository = ds.getRepository(Instance);
+      const instance = await instanceRepository.findOne({
         where: {
-          sessionId: whatsappiOptions.sessionId,
+          sessionId: this.whatsappiOptions.sessionId,
         },
       });
       if (!instance) {
-        // Create new instance
-        await ds.getRepository(Instance).save({
-          sessionId: whatsappiOptions.sessionId,
-          sessionName: whatsappiOptions.sessionName,
-          sessionToken: whatsappiOptions.sessionToken,
-          webhookUrl: whatsappiOptions.webhookUrl,
-          restartable: whatsappiOptions.restartable,
-          qrCode: undefined,
-          options: whatsappiOptions,
+        await instanceRepository.save({
+          sessionId: this.whatsappiOptions.sessionId,
+          sessionName: this.whatsappiOptions.sessionName,
+          sessionToken: this.whatsappiOptions.sessionToken,
+          webhookUrl: this.whatsappiOptions.webhookUrl,
+          restartable: this.whatsappiOptions.restartable,
+          qrCode: '',
+          options: this.whatsappiOptions,
           connectionStatus: InstanceConnectionStatus.CREATED,
         });
       }
-      await ds.getRepository(Auth).find();
-    } catch {
-      return await this.init(whatsappiOptions, db, { sync: true, ...options });
+    } catch (error) {
+      new DatabaseModule(this.whatsappiOptions, {
+        ...this.options,
+        sync: true,
+      }).init();
     }
+    const { auth, store } = await BaileysBottle({
+      type: 'sqlite',
+      database: cwd() + `/db/${this.databaseName}`, // (optional) path to the
+    });
     return {
-      auth: new AuthHandler(ds, whatsappiOptions.sessionId),
-      store: new StoreHandler(ds, whatsappiOptions.sessionId),
+      auth,
+      store,
     };
   };
-}
 
-export default DatabaseModule.instance.init;
-export * from './entities';
-export * from './handlers';
+  public getWhatsappiDataStore = (): DataSource => {
+    if (!this.whatsappiDataStore) {
+      throw new Error('Whatsappi data store not initialized');
+    }
+    return this.whatsappiDataStore;
+  };
+
+  public getWhatsappiOptions = (): WhatsappiOptions => {
+    return this.whatsappiOptions;
+  };
+
+  public getDatabaseName = (): string => {
+    return this.databaseName;
+  };
+
+  public getOptions = ():
+    | {
+        sync?: boolean | undefined;
+        debug?: boolean | undefined;
+      }
+    | undefined => {
+    return this.options;
+  };
+}
