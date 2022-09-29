@@ -29,3 +29,8 @@ build/
 
 # .swc
 .swc/
+
+# Database
+**/*.db
+db/*.db
+*.db

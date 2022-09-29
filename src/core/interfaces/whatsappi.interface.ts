@@ -1,90 +1,49 @@
-import { Contact, MessageUpsertType, proto } from '@adiwajshing/baileys';
+import { UserFacingSocketConfig, WASocket } from '@adiwajshing/baileys';
 
-export interface MessagesType {
-  messages: proto.IWebMessageInfo[];
-  type: MessageUpsertType;
-  fileNameDownloaded?: string;
-}
+import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
 
-export interface ITypeDeviceWithMessage {
-  typeDevice: string;
-  message: proto.WebMessageInfo;
-}
+import { DataSource } from 'typeorm';
 
-export interface WhatsappiProps {
+/**
+ * Interface for new Whatsappi options
+ */
+export interface WhatsappiOptions {
+  sessionId?: string;
   sessionName: string;
-  agentName?: string;
-  qrCodeInTerminal: boolean;
-  IgnoreBroadCastMessages: boolean;
-  IgnoreGroupsMessages: boolean;
-  IgnoreServer_ACK: boolean;
-  onMessage: (message: MessagesType) => void;
-  onStatusChange: (connectionStatus: 'Connected' | 'WaitinLogin') => void;
-  onDisconnected: () => void;
+  sessionToken?: string;
+  webhookUrl?: string;
+  restartable?: boolean;
+  printQRinTerminal?: boolean;
+  markOnlineOnConnect?: boolean;
+  ignoreBroadcastMessages?: boolean;
+  ignoreGroupMessages?: boolean;
+  ignoreServerAck?: boolean;
+  syncFullHistory?: boolean;
 }
 
-export interface IExistenceOnWhatsApp {
-  exists: boolean;
-  formatedJid: string;
-}
-
-export interface IListMessageDefinitions {
-  text: string;
-  footer?: string;
-  title: string;
-  buttonText: string;
-  sections: Array<{
-    title: string;
-    rows: Array<{
-      title: string;
-      rowId: string;
-      description?: string;
-    }>;
-  }>;
-}
-
-export interface IWhatsappi {
-  verifyExistenceNumber: (number: string) => Promise<IExistenceOnWhatsApp>;
-  sendGifOrVideoMessage: (
-    mediaPath: string,
-    number: string,
-    content?: string,
-    isGif?: boolean,
-  ) => Promise<proto.WebMessageInfo>;
-  sendImage: (
-    imagePath: string,
-    number: string,
-    content?: string,
-  ) => Promise<proto.WebMessageInfo>;
-  sendAudioMedia: (
-    audioPath: string,
-    number: string,
-    isPtt?: boolean,
-  ) => Promise<proto.WebMessageInfo>;
-  logOut: () => Promise<boolean>;
-  sendListMessage: (
-    number: string,
-    listMessage: IListMessageDefinitions,
-  ) => Promise<proto.WebMessageInfo>;
-  getDeviceInformation: () => Contact;
-  blockContact: (number: string) => Promise<boolean>;
-  unBlockContact: (number: string) => Promise<boolean>;
-  getImageContact: (
-    number: string,
-    isGroup: boolean,
-  ) => Promise<{ uri: string }>;
-  deleteMessageForEveryone: (
-    number: string,
-    messageId: string,
-    isGroup?: boolean,
-  ) => Promise<boolean>;
-  sendSimpleMessage: (
-    content: string,
-    number: string,
-  ) => Promise<proto.WebMessageInfo>;
-  replyMessage: (
-    number: string,
-    content: string,
-    quotedId: string,
-  ) => Promise<proto.WebMessageInfo>;
+/**
+ * Interface for Whatsappi instance
+ * @interface
+ * @property {WhatsappiOptions} instanceOptions - Instance options
+ * @property {DataSource} whatsappiDatabase - Instance database
+ * @property {UserFacingSocketConfig} socketOptions - Instance socket options
+ * @property {WASocket} socket - Instance socket
+ * @property {StoreHandle} store - Instance store
+ * @property {StoreHandle} getStore - Instance getStore
+ * @property {Function} onQRUpdate - Instance onQRUpdate
+ * @property {Function} onQRScanned - Instance onQRScanned
+ * @property {Function} onLoggedIn - Instance onLoggedIn
+ * @property {Function} onEvent - Instance onEvent
+ */
+export interface WhatsappiInstance {
+  instanceOptions: WhatsappiOptions;
+  whatsappiDatabase: DataSource;
+  socketOptions: UserFacingSocketConfig;
+  socket: WASocket;
+  store: StoreHandle;
+  getStore: StoreHandle;
+  onQRUpdate: (callback: (qr: string) => void) => void;
+  onQRScanned: (callback: () => void) => void;
+  onLoggedIn: (callback: () => void) => void;
+  onEvent: (event: string, cb: any) => void;
 }

@@ -1,72 +1,103 @@
-import { Whatsappi } from '.';
+import { Instance } from './core/database';
+import {
+  WhatsappiOptions,
+  WhatsappiInstance,
+  InstanceConnectionStatus,
+} from './core/interfaces';
+import { Whatsappi } from './core/whatsappi';
 
-(async () => {
-  const SessionName = 'WhatsappiExample';
+/**
+ * Whatsappi options example
+ */
+const whatsappiOptions: WhatsappiOptions = {
+  sessionId: 'connector',
+  sessionName: 'Whatsappi',
+  printQRinTerminal: true,
+  ignoreBroadcastMessages: false,
+  ignoreGroupMessages: false,
+  ignoreServerAck: false,
+  markOnlineOnConnect: false,
+  syncFullHistory: true,
+};
 
-  const clientOne = await Whatsappi({
-    sessionName: SessionName,
-    qrCodeInTerminal: true,
-    IgnoreBroadCastMessages: true,
-    IgnoreGroupsMessages: true,
-    IgnoreServer_ACK: true,
-    onDisconnected: () => console.log(''),
-    onStatusChange: (connectionStatus) => console.log(connectionStatus),
-    onMessage: (message) => {
-      console.log(JSON.stringify(message, undefined, 2));
-      console.log(message);
-    },
-  });
-
-  try {
-    // sending a message
-    console.log(
-      JSON.stringify(
-        await clientOne.sendSimpleMessage(
-          'Sending Simple Message',
-          '573203999858',
-        ),
-        undefined,
-        2,
-      ),
-    );
-
-    //replying a message
-    console.log(
-      JSON.stringify(
-        await clientOne.replyMessage(
-          '573203999858',
-          'Hello, I am replying this message',
-          'BAE57B9147270DE0',
-        ),
-        undefined,
-        2,
-      ),
-    );
-
-    //verifieng the existence of a number
-    console.log(await clientOne.verifyExistenceNumber('573203999858'));
-
-    //sending a list
-    const sendListMessage = await clientOne.sendListMessage('573203999858', {
-      text: 'Sending a list',
-      buttonText: 'Click here',
-      title: 'List title',
-      sections: [
-        {
-          title: 'Section title',
-          rows: [
-            {
-              title: 'Row title',
-              rowId: 'rowId',
-              description: 'Row description',
-            },
-          ],
+/**
+ * Whatsappi instance example
+ * @param {WhatsappiOptions} whatsappiOptions - Whatsappi options
+ * @returns {WhatsappiInstance} Whatsappi instance
+ * @example
+ * const whatsappi = new Whatsappi(whatsappiOptions);
+ * whatsappi.start().then((instance: WhatsappiInstance) => {
+ *  console.log('Whatsappi instance started', instance);
+ * const client = instance;
+ * client.onQRUpdate(async (qr: string) => {
+ * console.log('QR updated from callback', qr);
+ * const instance: Instance | null = await client.whatsappiDatabase
+ * .getRepository(Instance)
+ * .findOne({
+ * where: {
+ * sessionId: client.instanceOptions.sessionId,
+ * },
+ * });
+ */
+const whatsappi = new Whatsappi(whatsappiOptions);
+whatsappi.start().then((instance: WhatsappiInstance) => {
+  console.log('Whatsappi instance started', instance);
+  const client = instance;
+  client.onQRUpdate(async (qr: string) => {
+    console.log('QR updated from callback', qr);
+    const instance: Instance | null = await client.whatsappiDatabase
+      .getRepository(Instance)
+      .findOne({
+        where: {
+          sessionId: client.instanceOptions.sessionId,
         },
-      ],
-    });
-
-    console.log(sendListMessage);
-  } catch ({ message }) {
-    console.log(message);
-  }
-})();
+      });
+    if (instance) {
+      instance.qrCode = qr;
+      instance.connectionStatus = InstanceConnectionStatus.WAITING_FOR_QR;
+      await client.whatsappiDatabase.getRepository(Instance).save(instance);
+      console.log('QR updated in database');
+      console.log(instance);
+    }
+  });
+  client.onQRScanned(async () => {
+    console.log('QR scanned from callback');
+    const instance: Instance | null = await client.whatsappiDatabase
+      .getRepository(Instance)
+      .findOne({
+        where: {
+          sessionId: client.instanceOptions.sessionId,
+        },
+      });
+    if (instance) {
+      instance.qrCode = '';
+      instance.connectionStatus = InstanceConnectionStatus.INITIALIZING;
+      await client.whatsappiDatabase.getRepository(Instance).save(instance);
+      console.log('QR scanned in database');
+      console.log(instance);
+    }
+  });
+  client.onLoggedIn(async () => {
+    console.log('Logged in from callback');
+    // await client.socket.sendMessage('573203999858@s.whatsapp.net', {
+    //   text: 'Hello from Whatsappi',
+    // });
+    const instance: Instance | null = await client.whatsappiDatabase
+      .getRepository(Instance)
+      .findOne({
+        where: {
+          sessionId: client.instanceOptions.sessionId,
+        },
+      });
+    if (instance) {
+      instance.qrCode = '';
+      instance.connectionStatus = InstanceConnectionStatus.CONNECTED;
+      await client.whatsappiDatabase.getRepository(Instance).save(instance);
+      console.log('Logged in in database');
+      console.log(instance);
+    }
+  });
+  client.onEvent('connection.update', (update: any) => {
+    console.log('Connection update from callback', update);
+  });
+});

@@ -1,1 +1,1 @@
-export { WhatsappiStorage } from './store.util';
+export * from './global.util';
