@@ -1,3 +1,5 @@
+import { Whatsappi } from '../whatsappi';
+
 /**
  * Connection status for instances
  */
@@ -8,3 +10,10 @@ export enum InstanceConnectionStatus {
   CONNECTED = 'CONNECTED',
   DISCONNECTED = 'DISCONNECTED',
 }
+
+export interface EventEntry {
+  event: string;
+  callback: (...args: any[]) => void;
+}
+
+export type WhatsappiT = InstanceType<typeof Whatsappi>;
