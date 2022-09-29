@@ -1,10 +1,14 @@
-import { Contact, WAMessage } from '@adiwajshing/baileys';
+import { Instance } from './core/database';
+import {
+  WhatsappiOptions,
+  WhatsappiInstance,
+  InstanceConnectionStatus,
+} from './core/interfaces';
+import { Whatsappi } from './core/whatsappi';
 
-import { Whatsappi, WhatsappiOptions } from './';
-import { InstanceConnectionStatus } from './core/interfaces/instance.interface';
-import { WhatsappiInstance } from './core/interfaces/whatsappi.interface';
-import { Instance } from './core/database/entities/instance.entity';
-
+/**
+ * Whatsappi options example
+ */
 const whatsappiOptions: WhatsappiOptions = {
   sessionId: 'connector',
   sessionName: 'Whatsappi',
@@ -16,6 +20,25 @@ const whatsappiOptions: WhatsappiOptions = {
   syncFullHistory: true,
 };
 
+/**
+ * Whatsappi instance example
+ * @param {WhatsappiOptions} whatsappiOptions - Whatsappi options
+ * @returns {WhatsappiInstance} Whatsappi instance
+ * @example
+ * const whatsappi = new Whatsappi(whatsappiOptions);
+ * whatsappi.start().then((instance: WhatsappiInstance) => {
+ *  console.log('Whatsappi instance started', instance);
+ * const client = instance;
+ * client.onQRUpdate(async (qr: string) => {
+ * console.log('QR updated from callback', qr);
+ * const instance: Instance | null = await client.whatsappiDatabase
+ * .getRepository(Instance)
+ * .findOne({
+ * where: {
+ * sessionId: client.instanceOptions.sessionId,
+ * },
+ * });
+ */
 const whatsappi = new Whatsappi(whatsappiOptions);
 whatsappi.start().then((instance: WhatsappiInstance) => {
   console.log('Whatsappi instance started', instance);

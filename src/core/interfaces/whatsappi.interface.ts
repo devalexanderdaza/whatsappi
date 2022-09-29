@@ -1,17 +1,8 @@
-import {
-  UserFacingSocketConfig,
-  WACallEvent,
-  WAMessage,
-  WASocket,
-} from '@adiwajshing/baileys';
+import { UserFacingSocketConfig, WASocket } from '@adiwajshing/baileys';
 
 import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
 
-import EventEmitter from 'events';
-
 import { DataSource } from 'typeorm';
-
-import { DatabaseModule } from '../database';
 
 /**
  * Interface for new Whatsappi options
@@ -30,6 +21,20 @@ export interface WhatsappiOptions {
   syncFullHistory?: boolean;
 }
 
+/**
+ * Interface for Whatsappi instance
+ * @interface
+ * @property {WhatsappiOptions} instanceOptions - Instance options
+ * @property {DataSource} whatsappiDatabase - Instance database
+ * @property {UserFacingSocketConfig} socketOptions - Instance socket options
+ * @property {WASocket} socket - Instance socket
+ * @property {StoreHandle} store - Instance store
+ * @property {StoreHandle} getStore - Instance getStore
+ * @property {Function} onQRUpdate - Instance onQRUpdate
+ * @property {Function} onQRScanned - Instance onQRScanned
+ * @property {Function} onLoggedIn - Instance onLoggedIn
+ * @property {Function} onEvent - Instance onEvent
+ */
 export interface WhatsappiInstance {
   instanceOptions: WhatsappiOptions;
   whatsappiDatabase: DataSource;

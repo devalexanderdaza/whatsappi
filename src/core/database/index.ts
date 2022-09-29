@@ -133,3 +133,5 @@ export class DatabaseModule {
     return this.options;
   };
 }
+
+export * from './entities';

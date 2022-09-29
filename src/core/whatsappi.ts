@@ -1,6 +1,5 @@
 import makeWASocket, {
   AuthenticationState,
-  BinaryNode,
   DisconnectReason,
   fetchLatestBaileysVersion,
   MessageRetryMap,
@@ -8,20 +7,20 @@ import makeWASocket, {
   WASocket,
 } from '@adiwajshing/baileys';
 import log from '@adiwajshing/baileys/lib/Utils/logger';
-import { WAMessage } from '@adiwajshing/baileys';
 
 import { Boom } from '@hapi/boom';
 
 import AuthHandle from 'baileys-bottle/lib/bottle/AuthHandle';
 import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
 
-import EventEmitter from 'events';
-
 import { Logger } from 'pino';
 
 import { DatabaseModule } from './database';
 import { WhatsappiInstance, WhatsappiOptions } from './interfaces';
 
+/**
+ * Whatsappi class
+ */
 export class Whatsappi {
   /**
    * Whatsappi options
@@ -37,6 +36,12 @@ export class Whatsappi {
   socket!: WASocket;
   whatsappiDatabase!: DatabaseModule;
 
+  /**
+   * Constructor
+   * @param {WhatsappiOptions} options - Whatsappi options
+   * @constructor
+   * @public
+   */
   constructor(options: WhatsappiOptions) {
     this.options = options;
     this.logger.level = 'silent';
@@ -71,6 +76,7 @@ export class Whatsappi {
 
   /**
    * Start Whatsappi
+   * @returns {Promise<WhatsappiInstance>}
    */
   public start = async (): Promise<WhatsappiInstance> => {
     const logger = log.child({});
@@ -120,6 +126,9 @@ export class Whatsappi {
       }
     });
 
+    /**
+     * Return Whatsappi instance
+     */
     return new Promise((resolve, reject) => {
       try {
         if (!this.socket) {
@@ -173,3 +182,6 @@ export class Whatsappi {
     });
   };
 }
+
+export * from './database';
+export * from './utils';
