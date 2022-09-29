@@ -2,7 +2,6 @@
  * Interface for new Whatsappi options
  */
 export interface WhatsappiOptions {
-  id?: string;
   sessionId?: string;
   sessionName: string;
   sessionToken?: string;

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Boom } from '@hapi/boom';
 import makeWASocket, {
   BaileysEventEmitter,
   ConnectionState,
-  jidNormalizedUser,
   toNumber,
   updateMessageWithReceipt,
   updateMessageWithReaction,
@@ -10,6 +10,7 @@ import makeWASocket, {
   WAMessageCursor,
   WAMessage,
   makeWALegacySocket,
+  DisconnectReason,
 } from '@adiwajshing/baileys';
 import { DataSource } from 'typeorm';
 import { proto } from '@adiwajshing/baileys';
@@ -475,7 +476,50 @@ export class StoreHandler {
   };
 
   bind = (ev: BaileysEventEmitter) => {
-    ev.on('connection.update', (update) => Object.assign(this.state, update));
+    ev.on('connection.update', (update) => {
+      // Object.assign(this.state, update);
+      const {
+        connection,
+        isNewLogin,
+        isOnline,
+        qr,
+        receivedPendingNotifications,
+        lastDisconnect,
+      } = update;
+      if (connection) {
+        if (connection === 'open') {
+          // TODO: Implement logic for new login and pending notifications
+          if (receivedPendingNotifications) {
+            console.log('Pending notifications received.');
+          }
+          if (isOnline) {
+            console.log('Connection opened. You are online.');
+          }
+        }
+        if (connection === 'close') {
+          if (
+            (lastDisconnect?.error as Boom)?.output?.statusCode !==
+            DisconnectReason.loggedOut
+          ) {
+            // TODO - Implement reconnection logic
+            console.log('Connection closed. Reconnecting...');
+          } else {
+            // TODO - Implement logout logic
+            console.log('Connection closed. You are logged out.');
+          }
+        }
+        if (connection === 'connecting') {
+          // TODO - Implement connecting logic
+          if (isNewLogin) {
+            console.log('Logging in...');
+          }
+        }
+        if (qr) {
+          // TODO - Implement QR code logic
+          console.log('QR code received.');
+        }
+      }
+    });
     ev.on('chats.set', async ({ chats: newChats, isLatest }) => {
       isLatest &&
         (await this.datasource

@@ -37,7 +37,8 @@ export class AuthHandler {
     let keys: any = {};
 
     const existingAuth = await this.datasource.getRepository(Auth).findOneBy({
-      key: 'default_auth',
+      sessionId: this.sessionId,
+      key: this.sessionId,
     });
 
     ({ creds, keys } = existingAuth
@@ -46,6 +47,7 @@ export class AuthHandler {
 
     const saveState = () =>
       this.datasource.getRepository(Auth).save({
+        sessionId: this.sessionId,
         key: this.sessionId,
         value: JSON.stringify({ creds, keys }, BufferJSON.replacer, 2),
       });
@@ -72,7 +74,6 @@ export class AuthHandler {
               keys[key] = keys[key] || {};
               Object.assign(keys[key], data[_key]);
             }
-
             saveState();
           },
         },

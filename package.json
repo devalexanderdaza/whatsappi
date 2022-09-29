@@ -101,6 +101,7 @@
     "sqlite3": "^5.1.1",
     "typeorm": "^0.3.10",
     "uuid": "^9.0.0",
+    "uuid-by-string": "^4.0.0",
     "wa-sticker-formatter": "^4.3.2"
   },
   "devDependencies": {
