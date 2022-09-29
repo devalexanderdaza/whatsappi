@@ -6,9 +6,9 @@ import AuthHandle from 'baileys-bottle/lib/bottle/AuthHandle';
 
 import { cwd } from 'process';
 
-import { InstanceConnectionStatus } from '../../interfaces/instance.interface';
-import { WhatsappiOptions } from '../../interfaces/whatsappi.interface';
-import { generateUUID, generateUUIDFromString } from '../../utils/global.util';
+import { InstanceConnectionStatus } from '../interfaces/instance.interface';
+import { WhatsappiOptions } from '../interfaces/whatsappi.interface';
+import { generateUUID, generateUUIDFromString } from '../utils/global.util';
 
 import { Instance } from './entities';
 

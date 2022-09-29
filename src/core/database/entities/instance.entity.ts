@@ -1,6 +1,6 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
-import { WhatsappiOptions } from '../../../interfaces';
+import { WhatsappiOptions } from '../../interfaces';
 
 @Entity('instances')
 export class Instance {

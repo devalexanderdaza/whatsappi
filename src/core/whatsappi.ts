@@ -13,8 +13,8 @@ import { Boom } from '@hapi/boom';
 import AuthHandle from 'baileys-bottle/lib/bottle/AuthHandle';
 import StoreHandle from 'baileys-bottle/lib/bottle/StoreHandle';
 
+import { DatabaseModule } from './database';
 import { WhatsappiOptions } from './interfaces';
-import { DatabaseModule } from './modules';
 
 export class Whatsappi {
   /**
