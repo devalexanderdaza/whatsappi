@@ -29,7 +29,6 @@ export class DatabaseModule {
       debug?: boolean;
     },
   ) {
-    console.log('Database module initialized');
     // Validate wharsappiOptions
     whatsappiOptions.sessionId = whatsappiOptions.sessionId || generateUUID();
     whatsappiOptions.sessionName = whatsappiOptions.sessionName || 'default';
@@ -70,7 +69,7 @@ export class DatabaseModule {
       entities: [Instance],
       migrations: [],
       synchronize: this.options?.sync || true,
-      logging: this.options?.debug || true,
+      logging: this.options?.debug || false,
     }).initialize();
     this.whatsappiDataStore = ds;
 

@@ -80,7 +80,7 @@ export class Whatsappi {
    */
   public start = async (): Promise<WhatsappiInstance> => {
     const logger = log.child({});
-    logger.level = 'debug';
+    logger.level = 'silent';
 
     this.whatsappiDatabase = new DatabaseModule(this.options);
     const { auth, store } = await this.whatsappiDatabase.init();
@@ -91,7 +91,6 @@ export class Whatsappi {
     this.saveState = saveState;
 
     const { version, isLatest } = await fetchLatestBaileysVersion();
-    console.log(`using WA v${version.join('.')}, isLatest: ${isLatest}`);
 
     this.socketOptions = {
       logger,
