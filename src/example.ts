@@ -5,12 +5,13 @@ import {
   InstanceConnectionStatus,
 } from './core/interfaces';
 import { Whatsappi } from './core/whatsappi';
+import { generateUUID } from './core/utils/global.util';
 
 /**
  * Whatsappi options example
  */
 const whatsappiOptions: WhatsappiOptions = {
-  sessionId: 'connector',
+  sessionId: 'whatsappi',
   sessionName: 'Whatsappi',
   printQRinTerminal: true,
   ignoreBroadcastMessages: false,
@@ -18,6 +19,9 @@ const whatsappiOptions: WhatsappiOptions = {
   ignoreServerAck: false,
   markOnlineOnConnect: false,
   syncFullHistory: true,
+  restartable: true,
+  webhookUrl: 'https://webhook.site/c13e9693-f22b-4531-8ee8-90d18146a2b5',
+  sessionToken: generateUUID(),
 };
 
 /**
@@ -41,7 +45,6 @@ const whatsappiOptions: WhatsappiOptions = {
  */
 const whatsappi = new Whatsappi(whatsappiOptions);
 whatsappi.start().then((instance: WhatsappiInstance) => {
-  console.log('Whatsappi instance started', instance);
   const client = instance;
   client.onQRUpdate(async (qr: string) => {
     console.log('QR updated from callback', qr);
