@@ -9,8 +9,8 @@ export interface WhatsappiOptions {
   restartable?: boolean;
   printQRinTerminal?: boolean;
   markOnlineOnConnect?: boolean;
-  ignoreBroadcastMessages: boolean;
-  ignoreGroupMessages: boolean;
-  ignoreServerAck: boolean;
+  ignoreBroadcastMessages?: boolean;
+  ignoreGroupMessages?: boolean;
+  ignoreServerAck?: boolean;
   syncFullHistory?: boolean;
 }

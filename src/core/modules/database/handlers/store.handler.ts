@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Boom } from '@hapi/boom';
 import makeWASocket, {
   BaileysEventEmitter,
   ConnectionState,
@@ -12,8 +11,12 @@ import makeWASocket, {
   makeWALegacySocket,
   DisconnectReason,
 } from '@adiwajshing/baileys';
-import { DataSource } from 'typeorm';
 import { proto } from '@adiwajshing/baileys';
+
+import { Boom } from '@hapi/boom';
+
+import { DataSource } from 'typeorm';
+
 import {
   Chat as DBChat,
   Contact as DBContact,
