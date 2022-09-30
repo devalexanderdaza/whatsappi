@@ -4,6 +4,7 @@
 name: Whatsappi Package
 
 on:
+  workflow_dispatch:
   release:
     types: [created]
 
