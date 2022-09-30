@@ -1,7 +1,7 @@
 {
   "name": "whatsappi",
   "description": "Baileys Whatsapp library wrapper for easy integration on any NodeJS projects. This library using the latest version of @adiwajshing/baileys library for install and run",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "author": {
     "name": "Alexander Daza",
     "email": "dev.alexander.daza@gmail.com",
